@@ -1,0 +1,14 @@
+[package]
+name = "marble-bros"
+version = "0.1.0"
+authors = ["cdaringe <cdaringe@gmail.com>"]
+edition = "2018"
+
+# See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
+
+[dependencies]
+bevy = "0.4"
+bevy_render = "0.4.0"
+bevy_prototype_lyon = "0.2"
+bevy_rapier2d = { version = "*", features = [ "simd-stable", "parallel" ] }
+lazy_static = "1.4.0"
