@@ -1,7 +1,7 @@
 #[macro_use]
 extern crate lazy_static;
 
-use bevy::{math::vec3, prelude::*};
+use bevy::{input::mouse::MouseButtonInput, math::vec3, prelude::*};
 use bevy_prototype_lyon::prelude::*;
 use bevy_rapier2d::rapier::{dynamics::RigidBodyBuilder, geometry::ColliderSet};
 use bevy_rapier2d::rapier::geometry::ColliderBuilder;
@@ -121,23 +121,44 @@ fn main() {
         .add_plugin(RapierRenderPlugin)
         .add_startup_system(setup.system())
         .add_system(ball_motion_system.system())
-        .add_system(keyboard_input_system.system())
         .add_system(body_system.system())
+        .add_system(projectile_system.system())
         .run();
 }
 
-fn keyboard_input_system(keyboard_input: Res<Input<KeyCode>>) {
-    if keyboard_input.pressed(KeyCode::A) {
-        println!("'A' currently pressed");
-    }
-
-    if keyboard_input.just_pressed(KeyCode::A) {
-        println!("'A' just pressed");
-    }
-
-    if keyboard_input.just_released(KeyCode::A) {
-        println!("'A' just released");
-    }
+fn projectile_system (
+  commands: &mut Commands,
+  mut bodies: ResMut<RigidBodySet>,
+  keyboard_input: Res<Input<MouseButton>>
+) {
+  if !keyboard_input.just_pressed(MouseButton::Left) {
+    return ();
+  }
+  let (r, character_body) = bodies.iter_mut().find(|(_, body)| body.user_data == 1).unwrap();
+    let ball_radius: f32 = 4.;
+    let vvv = character_body.position().translation.vector;
+    character_body.position().transform_vector(v)
+    let ball_body_builder = RigidBodyBuilder::new_dynamic()
+        .translation(vvv[0], vvv.)
+        .user_data(1);
+    let ball_collider = ColliderBuilder::ball(ball_radius);
+    // let texture_handle = asset_server.load("img/marbles/hazers.png");
+    commands
+        .spawn((ball_body_builder, ball_collider))
+        .with_children(|x| {
+            let mut bundle = SpriteBundle::default();
+            bundle.sprite = Sprite {
+                // this is confusing. this size is 2x the size of the parent. the size
+                // of the parent is apparently the radius. so, _scale_ to 2x the parent
+                // size?
+                size: Vec2::new(2., 2.),
+                resize_mode: SpriteResizeMode::Manual,
+            };
+            bundle.transform = Transform::from_translation(vec3(0., 0., 10.));
+            // bundle.material = materials.add(texture_handle.into());
+            x.spawn(bundle);
+        })
+        .with(Ball {});
 }
 
 fn body_system(mut bodies_query: ResMut<RigidBodySet>) {
@@ -152,8 +173,8 @@ fn ball_motion_system(
     colliders: Res<ColliderSet>
 ) {
     let x_dir = match (
-        keyboard_input.pressed(KeyCode::Left),
-        keyboard_input.pressed(KeyCode::Right),
+        keyboard_input.pressed(KeyCode::A),
+        keyboard_input.pressed(KeyCode::D),
     ) {
         (true, true) => None,
         (true, _) => Some(-1.),
